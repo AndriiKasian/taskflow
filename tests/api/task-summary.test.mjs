@@ -8,9 +8,10 @@
 //      BASE_URL=http://localhost:3000 corepack pnpm test:api
 //
 // Each run signs up fresh throwaway users with random passwords (email
-// confirmation is off locally). The database-failure test temporarily revokes
-// SELECT on public.tasks inside the local Docker database and always restores
-// it. The suite refuses to run against a non-local Supabase URL.
+// confirmation is off locally) and deletes them afterwards. The
+// database-failure test temporarily revokes SELECT on public.tasks inside the
+// local Docker database and always restores it. The suite refuses to run
+// against a non-local Supabase URL.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -57,6 +58,8 @@ async function login(email, password) {
   return cookie;
 }
 
+const created = [];
+
 // A new user whose tasks are inserted with their own JWT (RLS applies).
 async function newUser(tag, counts = {}) {
   const client = createClient(API, KEY, { auth: { persistSession: false } });
@@ -65,6 +68,7 @@ async function newUser(tag, counts = {}) {
   const { data, error } = await client.auth.signUp({ email, password });
   if (error) throw error;
   const id = data.user.id;
+  created.push(id);
   const rows = Object.entries(counts).flatMap(([status, n]) =>
     Array.from({ length: n }, (_, i) => ({ user_id: id, status, title: `${status}-${i}` })),
   );
@@ -211,5 +215,11 @@ test("summary works again after privileges are restored", async () => {
   assert.equal(json.total, 10);
 });
 
-// Safety net in case the process is interrupted mid-test.
-after(() => psql("grant select on public.tasks to authenticated;"));
+// Restore privileges (safety net) and delete this run's users; their tasks
+// and preferences cascade.
+after(() => {
+  psql("grant select on public.tasks to authenticated;");
+  if (created.length) {
+    psql(`delete from auth.users where id in (${created.map((id) => `'${id}'`).join(",")});`);
+  }
+});
