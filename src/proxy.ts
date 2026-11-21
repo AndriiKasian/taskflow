@@ -41,6 +41,11 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  // No landing page: "/" goes straight to the app or to sign-in.
+  if (pathname === "/") {
+    return redirectTo(data?.claims ? "/dashboard" : "/login", request, response);
+  }
+
   if (!data?.claims && pathname.startsWith("/dashboard")) {
     return redirectTo("/login", request, response);
   }

@@ -5,7 +5,7 @@ import { AuthForm } from "@/app/auth/auth-form";
 import { ConfirmationError } from "./confirmation-error";
 
 export const metadata: Metadata = {
-  title: "Sign in · Supabase SaaS Dashboard",
+  title: "Sign in · TaskFlow",
 };
 
 export default function LoginPage() {

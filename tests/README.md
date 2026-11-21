@@ -8,7 +8,7 @@ their tasks and preferences) through the local Docker database afterwards.
 | Script | Suite | Needs |
 | --- | --- | --- |
 | `test:api` | `GET /api/tasks/summary` | app |
-| `test:dashboard` | dashboard pagination, filters, cross-user Server Actions | app |
+| `test:dashboard` | root redirect, pagination, filters, cross-user Server Actions | app |
 | `test:database` | RLS and table constraints via the Data API | stack only |
 | `test:functions` | `task-insights` Edge Function | `supabase functions serve` |
 

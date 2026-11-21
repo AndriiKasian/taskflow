@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Supabase SaaS Dashboard",
+  title: "TaskFlow",
   description: "A small SaaS dashboard built with Next.js and Supabase.",
 };
 

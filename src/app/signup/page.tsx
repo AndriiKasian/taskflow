@@ -3,7 +3,7 @@ import { signup } from "@/app/auth/actions";
 import { AuthForm } from "@/app/auth/auth-form";
 
 export const metadata: Metadata = {
-  title: "Sign up · Supabase SaaS Dashboard",
+  title: "Sign up · TaskFlow",
 };
 
 export default function SignupPage() {
