@@ -67,7 +67,15 @@ export function session() {
     store(res);
     return res;
   };
-  return { get, submit };
+  // Any request with this session's cookies (e.g. a Server Action call).
+  const request = async (path, init = {}) => {
+    const res = await fetch(BASE + path, {
+      redirect: "manual", ...init, headers: { cookie: cookie(), ...init.headers },
+    });
+    store(res);
+    return res;
+  };
+  return { get, submit, request };
 }
 
 export const login = (s, user) =>

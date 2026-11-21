@@ -8,7 +8,8 @@ their tasks and preferences) through the local Docker database afterwards.
 | Script | Suite | Needs |
 | --- | --- | --- |
 | `test:api` | `GET /api/tasks/summary` | app |
-| `test:dashboard` | dashboard pagination and filters | app |
+| `test:dashboard` | dashboard pagination, filters, cross-user Server Actions | app |
+| `test:database` | RLS and table constraints via the Data API | stack only |
 | `test:functions` | `task-insights` Edge Function | `supabase functions serve` |
 
 ```sh
@@ -20,12 +21,13 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<local key> \
 
 export SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_PUBLISHABLE_KEY=<local key>
 export BASE_URL=http://localhost:3000
-corepack pnpm test:api && corepack pnpm test:dashboard
+corepack pnpm test:database && corepack pnpm test:api && corepack pnpm test:dashboard
 ```
 
 For `test:functions`, run `corepack pnpm dlx supabase@3.2.0 functions serve`
 instead of the app. Set `SUPABASE_JWT_SECRET` (local value from
 `supabase status`) to include the expired-token case.
 
-The database-failure tests briefly revoke `SELECT` on `public.tasks` from
-`authenticated` in the local database and always restore it.
+Run suites one at a time: the database-failure tests briefly revoke `SELECT`
+on `public.tasks` from `authenticated` in the local database (always
+restoring it), which would break suites running at the same moment.
