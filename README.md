@@ -148,8 +148,8 @@ scripts/insights-smoke.mjs Authenticated smoke test for the deployed function
 ### Setup
 
 ```sh
-git clone https://github.com/AndriiKasian/supabase-saas-dashboard.git
-cd supabase-saas-dashboard
+git clone https://github.com/AndriiKasian/taskflow.git
+cd taskflow
 corepack pnpm install
 cp .env.example .env.local
 ```
