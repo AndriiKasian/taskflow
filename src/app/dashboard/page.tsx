@@ -10,6 +10,7 @@ import { FilterIcon, LayersIcon } from "./icons";
 import { NewTaskButton } from "./task-dialog";
 import { TaskFilters as TaskFiltersForm } from "./task-filters";
 import { TaskItem } from "./task-item";
+import { TaskStats, TaskStatsProvider } from "./task-stats";
 import type { Task, TaskFilters } from "./tasks";
 
 export const metadata: Metadata = {
@@ -131,8 +132,10 @@ export default function DashboardPage({ searchParams }: PageProps<"/dashboard">)
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 sm:px-8 fit:h-dvh fit:flex-none fit:overflow-hidden">
       <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b sm:h-16">
-        <p className="flex items-center gap-2.5 text-xl font-semibold tracking-tight">
-          <LayersIcon className="size-6" />
+        <p className="flex items-center gap-2.5 text-lg font-semibold tracking-tight">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm shadow-primary/30">
+            <LayersIcon className="size-[18px]" />
+          </span>
           TaskFlow
         </p>
         <Suspense fallback={null}>
@@ -140,48 +143,55 @@ export default function DashboardPage({ searchParams }: PageProps<"/dashboard">)
         </Suspense>
       </header>
 
-      <main className="flex flex-1 flex-col gap-6 py-6 sm:gap-7 sm:py-8 fit:min-h-0 fit:gap-5 fit:py-5">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl fit:text-2xl">
-              My Tasks
-            </h1>
-            <p className="text-sm text-muted-foreground sm:text-base fit:text-sm">
-              Organize your work, stay focused.
-            </p>
+      <main className="flex flex-1 flex-col gap-6 py-6 sm:gap-7 sm:py-8 fit:min-h-0 fit:gap-4 fit:py-5">
+        <TaskStatsProvider>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl fit:text-2xl">
+                My Tasks
+              </h1>
+              <p className="text-sm text-muted-foreground sm:text-base fit:text-sm">
+                Organize your work, stay focused.
+              </p>
+            </div>
+            <NewTaskButton />
           </div>
-          <NewTaskButton />
-        </div>
 
-        <section aria-labelledby="filters-heading" className="flex flex-col gap-2.5">
-          <h2
-            id="filters-heading"
-            className="flex items-center gap-2 text-base font-medium"
-          >
-            <FilterIcon className="size-4 text-muted-foreground" />
-            Filters
-          </h2>
-          <Suspense fallback={<FiltersSkeleton />}>
-            <Filters searchParams={searchParams} />
-          </Suspense>
-        </section>
+          {/* All tasks, ignoring filters and pagination. */}
+          <section aria-label="Task statistics">
+            <TaskStats />
+          </section>
 
-        <section
-          aria-labelledby="tasks-heading"
-          className="overflow-hidden rounded-xl border bg-card fit:flex fit:min-h-0 fit:flex-initial fit:flex-col"
-        >
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 sm:px-6">
-            <h2 id="tasks-heading" className="text-base font-semibold">
-              All tasks
+          <section aria-labelledby="filters-heading" className="flex flex-col gap-2.5">
+            <h2
+              id="filters-heading"
+              className="flex items-center gap-2 text-base font-medium"
+            >
+              <FilterIcon className="size-4 text-muted-foreground" />
+              Filters
             </h2>
-            <Suspense fallback={null}>
-              <TaskCount searchParams={searchParams} />
+            <Suspense fallback={<FiltersSkeleton />}>
+              <Filters searchParams={searchParams} />
             </Suspense>
-          </div>
-          <Suspense fallback={<ListSkeleton />}>
-            <TaskList searchParams={searchParams} />
-          </Suspense>
-        </section>
+          </section>
+
+          <section
+            aria-labelledby="tasks-heading"
+            className="overflow-hidden rounded-xl border bg-card shadow-xs fit:flex fit:min-h-0 fit:flex-initial fit:flex-col"
+          >
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b bg-muted/40 px-4 py-3 sm:px-6">
+              <h2 id="tasks-heading" className="text-base font-semibold">
+                All tasks
+              </h2>
+              <Suspense fallback={null}>
+                <TaskCount searchParams={searchParams} />
+              </Suspense>
+            </div>
+            <Suspense fallback={<ListSkeleton />}>
+              <TaskList searchParams={searchParams} />
+            </Suspense>
+          </section>
+        </TaskStatsProvider>
       </main>
     </div>
   );
@@ -244,11 +254,18 @@ async function TaskList({ searchParams }: { searchParams: SearchParams }) {
 
   if (tasks.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-1 px-6 py-16 text-center">
+      <div className="flex flex-col items-center gap-1 px-6 py-12 text-center">
+        <span className="mb-2 flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary ring-1 ring-primary/15">
+          {filtered ? (
+            <FilterIcon className="size-5" />
+          ) : (
+            <LayersIcon className="size-5" />
+          )}
+        </span>
         <p className="font-medium">
           {filtered ? "No matching tasks" : "No tasks yet"}
         </p>
-        <p className="text-sm text-muted-foreground">
+        <p className="max-w-xs text-sm text-muted-foreground">
           {filtered
             ? "Adjust or reset the filters above to see more tasks."
             : "Use “New task” to create your first one."}
@@ -335,7 +352,7 @@ function FiltersSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="grid gap-3 sm:grid-cols-3 lg:grid-cols-[1.15fr_1fr_1fr_auto]"
+      className="grid gap-3 motion-safe:animate-pulse sm:grid-cols-3 lg:grid-cols-[1.15fr_1fr_1fr_auto]"
     >
       {[0, 1, 2].map((i) => (
         <div key={i} className="h-[50px] rounded-lg border bg-muted/40" />
@@ -347,7 +364,7 @@ function FiltersSkeleton() {
 
 function ListSkeleton() {
   return (
-    <div role="status" className="divide-y">
+    <div role="status" className="divide-y motion-safe:animate-pulse">
       <span className="sr-only">Loading tasks…</span>
       {[0, 1, 2].map((i) => (
         <div key={i} className="flex items-center gap-4 px-4 py-5 sm:px-6">

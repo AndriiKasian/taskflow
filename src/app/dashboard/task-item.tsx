@@ -25,6 +25,7 @@ import {
 import { deleteTask, setTaskStatus } from "./actions";
 import { CalendarIcon, DotsIcon } from "./icons";
 import { TaskDialog } from "./task-dialog";
+import { useReloadTaskStats } from "./task-stats";
 import {
   STATUS_BADGE_CLASSES,
   STATUS_DOT_CLASSES,
@@ -32,6 +33,7 @@ import {
   TASK_STATUSES,
   formatDueDate,
   type Task,
+  type TaskFormState,
   type TaskStatus,
 } from "./tasks";
 
@@ -41,12 +43,21 @@ export function TaskItem({ task, today }: { task: Task; today: string }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   // Dialogs opened from the menu return focus to the menu button.
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  // Successful changes also refresh the task statistics.
+  const reloadStats = useReloadTaskStats();
+  const withStats =
+    (action: typeof setTaskStatus) =>
+    async (prev: TaskFormState, formData: FormData) => {
+      const result = await action(prev, formData);
+      if (result.ok) reloadStats();
+      return result;
+    };
   const [statusState, statusAction, statusPending] = useActionState(
-    setTaskStatus,
+    withStats(setTaskStatus),
     {},
   );
   const [deleteState, deleteAction, deletePending] = useActionState(
-    deleteTask,
+    withStats(deleteTask),
     {},
   );
   const [, startTransition] = useTransition();
@@ -63,7 +74,7 @@ export function TaskItem({ task, today }: { task: Task; today: string }) {
   const overdue = !done && task.due_date !== null && task.due_date < today;
 
   return (
-    <li className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-accent/30 sm:items-center sm:gap-4 sm:px-6">
+    <li className="flex items-start gap-3 px-4 py-3 transition-colors duration-150 hover:bg-accent/40 has-[[data-popup-open]]:bg-accent/40 sm:items-center sm:gap-4 sm:px-6">
       <span
         aria-hidden="true"
         className={`mt-1.5 size-3 shrink-0 rounded-full sm:mt-0 ${STATUS_DOT_CLASSES[task.status]}`}
@@ -72,7 +83,7 @@ export function TaskItem({ task, today }: { task: Task; today: string }) {
       <div className="min-w-0 flex-1 sm:flex sm:items-center sm:gap-6">
         <div className="min-w-0 flex-1">
           <h3
-            className={`font-medium break-words ${done ? "text-muted-foreground" : ""}`}
+            className={`font-medium break-words ${done ? "text-muted-foreground line-through decoration-muted-foreground/50" : ""}`}
           >
             {task.title}
           </h3>
@@ -101,7 +112,7 @@ export function TaskItem({ task, today }: { task: Task; today: string }) {
             </span>
           )}
           <span
-            className={`inline-flex min-w-24 justify-center rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${STATUS_BADGE_CLASSES[task.status]} ${statusPending ? "opacity-60" : ""}`}
+            className={`inline-flex min-w-24 justify-center rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap transition-opacity duration-150 ${STATUS_BADGE_CLASSES[task.status]} ${statusPending ? "opacity-60" : ""}`}
           >
             {statusPending ? "Updating…" : STATUS_LABELS[task.status]}
           </span>
@@ -115,7 +126,7 @@ export function TaskItem({ task, today }: { task: Task; today: string }) {
             <Button
               variant="ghost"
               size="icon-sm"
-              className="-my-1 shrink-0 text-muted-foreground hover:text-foreground"
+              className="-my-1 shrink-0 text-muted-foreground hover:text-foreground data-popup-open:bg-accent data-popup-open:text-foreground"
               aria-label={`Actions for ${task.title}`}
             />
           }

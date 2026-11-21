@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createTask, updateTask } from "./actions";
+import { useReloadTaskStats } from "./task-stats";
 import {
   STATUS_LABELS,
   TASK_STATUSES,
@@ -30,10 +31,12 @@ export function TaskForm({
   onDone?: () => void;
   onSaved?: () => void;
 }) {
+  const reloadStats = useReloadTaskStats();
   const [state, formAction, pending] = useActionState(
     async (prev: TaskFormState, formData: FormData) => {
       const result = await (task ? updateTask : createTask)(prev, formData);
       if (result.ok) {
+        reloadStats();
         onDone?.();
         onSaved?.();
       }
