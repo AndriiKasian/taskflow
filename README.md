@@ -20,11 +20,13 @@ TaskFlow is intentionally small in scope and deep in engineering. It shows how t
 
 ## Screenshots
 
-<!-- Add real screenshots to docs/screenshots/ and replace the placeholders below. -->
+**Dashboard**: statistics bar, saved filters, task list with status badges and overdue indicator, and server-side pagination.
 
-| Dashboard (desktop) | Mobile | New task dialog |
-| --- | --- | --- |
-| _Screenshot coming soon_ | _Screenshot coming soon_ | _Screenshot coming soon_ |
+![TaskFlow dashboard with task statistics, filters and a paginated task list](docs/screenshots/dashboard.png)
+
+**Create task**: dialog with title, optional description, status and optional due date.
+
+![TaskFlow New task dialog with title, description, status and due date fields](docs/screenshots/create-task.png)
 
 ## Features
 
